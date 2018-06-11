@@ -5,6 +5,9 @@ var scss = require('gulp-sass'); // 编译scss
 var server = require('gulp-webserver'); // 搭建服务
 var data = require('./src/data/data.json'); // 数据
 var babel = require('gulp-babel');
+var sequence = require('gulp-sequence');
+var clean = require('gulp-clean');
+var concat = require('gulp-concat');
 
 var fs = require('fs');
 var path = require('path');
@@ -14,7 +17,7 @@ gulp.task('scss', function() {
     gulp.src('src/scss/*.scss')
         .pipe(scss())
         .pipe(cleanCss())
-        .pipe(gulp.dest('src/css'));
+        .pipe(gulp.dest('build/css'));
 });
 
 // 监听scss
@@ -25,10 +28,17 @@ gulp.task('scss', function() {
 // 压缩js 文件
 gulp.task('uglify', function() {
     gulp.src('src/js/libs/*.js')
+        .pipe(babel({
+            presets: ['es2015']
+        }))
         .pipe(uglify())
-        .pipe(gulp.dest('src/js2'));
+        .pipe(gulp.dest('build'));
 });
 
+gulp.task('clean', function() {
+    gulp.src('build')
+        .pipe(clean());
+});
 // 启动服务
 gulp.task('server', function() {
     gulp.src('src')
@@ -50,3 +60,6 @@ gulp.task('server', function() {
         }))
 });
 gulp.task('default', ['scss', 'uglify', 'server']);
+gulp.task('build', function(cb) {
+    sequence('clean', 'scss', 'uglify', 'server', cb);
+})
